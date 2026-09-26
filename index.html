@@ -299,6 +299,51 @@
     <tr><td><span class="pill info">À vérifier</span></td><td>Un autre système séquentiel (offre au plus proche, cascade après 30 sec) existe dans le code mais semble non appelé et non planifié en cron — probable code mort, à confirmer.</td></tr>
   </tbody>
 </table></div>
+
+<h3>Les 6 questions du plan demandé, détaillées une par une</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th>Question</th><th>Ce qui existe aujourd'hui dans le code</th><th>Ce qui manque / reste à trancher</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>1. Qui voit l'offre en premier, sur quels critères</b></td>
+      <td>Tous les chauffeurs privés (<code>driver_type='private'</code>) de l'organisation ciblée, filtrés par ville via les périmètres d'opération, sont notifiés <b>en même temps</b> — pas de hiérarchie.</td>
+      <td>Pas de tri par proximité (la distance est calculée mais pas utilisée pour prioriser). Pas de cascade « flotte propre d'abord, sous-traitants ensuite » — le choix de la cible se fait manuellement par l'admin à la publication. <b>Décision business à prendre avant tout développement.</b></td>
+    </tr>
+    <tr>
+      <td><b>2. Combien de temps avant de passer au suivant</b></td>
+      <td>Fenêtre fixe de <b>5 minutes</b> pour tous les chauffeurs notifiés en parallèle (pas de cascade séquentielle dans le système actif).</td>
+      <td>Pas de fenêtre plus courte pour les courses urgentes (pickup proche). Un système séquentiel avec cascade à 30 sec existe dans le code mais semble non branché (probable code mort, à confirmer).</td>
+    </tr>
+    <tr>
+      <td><b>3. Ce que le chauffeur voit avant d'accepter</b></td>
+      <td>Prix net, lieux de départ/arrivée, horaire, type de véhicule requis — affichés sur l'écran dédié en temps réel.</td>
+      <td>À confirmer si le type de client (standard/VIP/récurrent) et les infos déjà connues (bagages, siège enfant) s'affichent systématiquement.</td>
+    </tr>
+    <tr>
+      <td><b>4. Refus ou pas de réponse</b></td>
+      <td>Un refus explicite est bien géré (offre marquée refusée). Les admins ont une vue générale des missions non assignées avec un flag « urgent » (&lt;2h) dans le dispatching.</td>
+      <td>Aucun signal automatique <b>spécifique au marketplace</b> quand la fenêtre de 5 min expire sans que personne n'accepte — la réservation reste juste publiée, sans alerte dédiée.</td>
+    </tr>
+    <tr>
+      <td><b>5. Flotte propre Marrakech vs sous-traitants ailleurs</b></td>
+      <td>Les deux publics existent séparément : chauffeurs privés (notification directe) et organisations sous-traitantes (leur propre page marketplace dédiée).</td>
+      <td>Pas de séquence automatique entre les deux — c'est un choix manuel de l'admin à la publication, pas une cascade « interne d'abord, externe si personne ne prend ».</td>
+    </tr>
+    <tr>
+      <td><b>6. Le prix vu par le chauffeur (le point le plus sensible)</b></td>
+      <td><span class="pill ok">Déjà réglé correctement</span> — le chauffeur voit uniquement son montant net (prix total converti en MAD, moins une commission % configurable), jamais le prix payé par le client.</td>
+      <td>Rien à changer ici.</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h3>Plan pour combler les trous — pas de souci à créer de nouvelles fonctions si besoin</h3>
+<div class="flow">
+  <div class="step human"><div class="k">1 · Décision business</div><b>Flotte propre d'abord ?</b><span>À trancher avant tout développement — c'est la question qui conditionne tout le reste.</span></div>
+  <div class="step"><div class="k">2 · Alerte</div><b>Signal dédié à 5 min</b><span>Nouveau cron/alerte spécifique au marketplace pour signaler une offre sans preneur, au lieu du silence actuel.</span></div>
+  <div class="step"><div class="k">3 · Tri</div><b>Priorité par distance</b><span>Utiliser la donnée distance déjà calculée pour ordonner les notifications, au lieu de tout notifier en même temps.</span></div>
+  <div class="step"><div class="k">4 · Nettoyage</div><b>Code séquentiel mort</b><span>Vérifier si vraiment inutilisé, puis décider de le supprimer ou de le réactiver.</span></div>
+</div>
 </div>
 
 <div class="foot">
